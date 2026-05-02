@@ -112,10 +112,12 @@ vim.keymap.set("n", "Q", "<Nop>", { desc = "Disable ex mode" })
 vim.keymap.set("n", "<space><space>f", function()
   local path = vim.fn.expand("%:p:h")
   if path ~= "" then
-    vim.fn.jobstart(
-      { "footclient", "-a", "foot.yazi", "-e", "/home/wasd/architect/scripts/ynv", path },
-      { detach = true }
-    )
+    vim.fn.jobstart({ "footclient", "-a", "foot.yazi", "-e", "/home/wasd/architect/scripts/ynv", path }, {
+      detach = true,
+      env = {
+        NVIM_LISTEN_ADDRESS = vim.v.servername,
+      },
+    })
   end
 end, { desc = "Open yazi in foot" })
 
@@ -156,7 +158,7 @@ if vim.g.neovide then
   vim.keymap.set("n", "<A-j>", "<C-w>j", { desc = "Focus down" })
   vim.keymap.set("n", "<A-k>", "<C-w>k", { desc = "Focus up" })
   vim.keymap.set("n", "<A-l>", "<C-w>l", { desc = "Focus right" })
-  vim.keymap.set("n", "<A-Tab>", "<C-w>w", { desc = "Cycle windows" })
+  vim.keymap.set("n", "<A-Tab>", ":bnext<CR>", { desc = "Next buffer" })
 
   -- Window management
   vim.keymap.set("n", "<A-Enter>", "<C-w>v", { desc = "Split vertical" })
@@ -180,17 +182,15 @@ if vim.g.neovide then
 
   -- Buffer navigation
   vim.keymap.set("n", "<C-Enter>", ":enew<CR>", { desc = "New buffer" })
-  vim.keymap.set("n", "<C-Tab>", ":bnext<CR>", { desc = "Next buffer" })
+  vim.keymap.set("n", "<C-Tab>", "<C-w>w", { desc = "Cycle windows" })
   vim.keymap.set("n", "<C-A-i>", ":bprevious<CR>", { desc = "Previous buffer" })
   vim.keymap.set("n", "<C-A-o>", ":bnext<CR>", { desc = "Next buffer" })
   vim.keymap.set("n", "<C-q>", function()
     Snacks.bufdelete()
   end, { desc = "Delete buffer" })
-
-  -- Direct buffer access
-  for i = 1, 9 do
-    vim.keymap.set("n", "<A-" .. i .. ">", ":buffer " .. i .. "<CR>", { desc = "Buffer " .. i })
-  end
+  vim.keymap.set("n", "<leader>qq", function()
+    Snacks.bufdelete()
+  end, { desc = "Delete buffer" })
 
   -- Clipboard operations
   vim.keymap.set({ "n", "v" }, "<C-S-c>", '"+y', { desc = "Copy to clipboard" })

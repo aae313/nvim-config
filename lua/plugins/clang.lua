@@ -18,7 +18,7 @@ return {
 
   {
     "p00f/clangd_extensions.nvim",
-    ft = { "c", "cpp", "objc", "objcpp", "ct" },
+    ft = { "c", "cpp", "objc", "objcpp" },
     opts = {
       inlay_hints = {
         inline = false,
@@ -87,6 +87,7 @@ return {
             usePlaceholders = true,
             completeUnimported = true,
             clangdFileStatus = true,
+            fallbackFlags = { "-x", "c" },
           },
         },
       },

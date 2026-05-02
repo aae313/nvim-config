@@ -19,7 +19,7 @@ return {
   end,
   opts = {
     mappings = {
-      add = "ms", -- Add surrounding in Normal and Visual modes
+      add = "ma", -- Add surrounding in Normal and Visual modes
       delete = "md", -- Delete surrounding
       find = "mf", -- Find surrounding (to the right)
       find_left = "mF", -- Find surrounding (to the left)
