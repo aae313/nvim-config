@@ -24,31 +24,24 @@ return {
       end,
     },
   },
-  {
-    "craftzdog/solarized-osaka.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-      dim_inactive = false,
-      transparent = false,
-    },
-  },
 
   {
     "rebelot/kanagawa.nvim",
     lazy = false,
     priority = 1000,
-    opts = {
-      theme = "dragon",
-      dimInactive = true,
-    },
+  },
+
+  {
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = { style = "night", dim_inactive = true },
   },
 
   {
     "LazyVim/LazyVim",
     opts = {
-
-      colorscheme = "modus",
+      colorscheme = "tokyonight",
     },
   },
 }

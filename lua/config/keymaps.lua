@@ -25,14 +25,15 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half-page down + center" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half-page up + center" })
 vim.keymap.set("n", "gj", "10jzz", { desc = "Jump down 10 lines + center" })
 vim.keymap.set("n", "gk", "10kzz", { desc = "Jump up 10 lines + center" })
+vim.keymap.set({ "n", "v", "x" }, "gh", "0", { desc = "Go to line start" })
+vim.keymap.set({ "n", "v", "x" }, "gl", "$", { desc = "Go to line end" })
 
 vim.keymap.set("n", "m", "<Nop>", { desc = "Disable for mini.surround", silent = true, noremap = true })
 vim.keymap.set({ "n", "v", "x" }, "mm", "%", { desc = "Match bracket", noremap = true, silent = true })
 
-vim.keymap.set("n", "mc", "m", { desc = "Set mark", noremap = true, silent = true })
-vim.keymap.set("n", "m'", "'", { desc = "Jump to mark", noremap = true, silent = true })
-vim.keymap.set("n", "m`", "`", { desc = "Jump to mark (exact)", noremap = true, silent = true })
-vim.keymap.set("n", "<A-`>", "<C-o>", { noremap = true, silent = true })
+vim.keymap.set("n", "<C-s>", "m", { desc = "Set mark", noremap = true, silent = true })
+
+-- vim.keymap.set("n", "<Enter>", "", { desc = "Split vertical" })
 
 -- ============================================================================
 -- BUFFER MANAGEMENT
@@ -97,8 +98,28 @@ local function yank_all_diagnostics()
   vim.fn.setreg("+", table.concat(lines, "\n"))
 end
 
-vim.keymap.set("n", "<leader><leader>d", yank_all_diagnostics, { desc = "Yank all diagnostics" })
-vim.keymap.set("n", "<leader><leader>x", yank_line_diagnostics, { desc = "Yank line diagnostics" })
+local function yank_latest_notification()
+  local ok, manager = pcall(require, "noice.message.manager")
+  if ok then
+    local notifications = manager.get({ event = "notify" }, { history = true, sort = true, reverse = true })
+    local latest = notifications[1]
+    if latest then
+      vim.fn.setreg("+", vim.trim(latest:content()))
+      return
+    end
+  end
+
+  local notifications = Snacks.notifier.get_history({ reverse = true })
+  if #notifications == 0 then
+    vim.notify("No notifications found", vim.log.levels.INFO)
+    return
+  end
+  vim.fn.setreg("+", notifications[1].msg)
+end
+
+vim.keymap.set("n", "<leader>yd", yank_all_diagnostics, { desc = "Yank all diagnostics" })
+vim.keymap.set("n", "<leader>yx", yank_line_diagnostics, { desc = "Yank line diagnostics" })
+vim.keymap.set("n", "<leader>yn", yank_latest_notification, { desc = "Yank latest notification" })
 
 -- ============================================================================
 -- TEXT OPERATIONS
@@ -122,7 +143,7 @@ vim.keymap.set("n", "<space><space>f", function()
 
   vim.fn.jobstart({
     "footclient",
-    "--app-id=foot.yazi",
+    "--app-id=foot.nvim",
     "--working-directory",
     path,
     scripts_dir .. "/y-nv",
@@ -135,7 +156,7 @@ local function open_scooter(search_text)
   local root = LazyVim.root()
   local args = {
     "footclient",
-    "--app-id=foot",
+    "--app-id=foot.nvim",
     "--working-directory",
     root,
     scripts_dir .. "/scooter-nv",
@@ -203,20 +224,25 @@ if vim.g.neovide then
   vim.keymap.set("n", "<C-Tab>", "<C-w>w", { desc = "Cycle windows" })
 
   -- Window management
-  vim.keymap.set("n", "<A-Enter>", "<C-w>v", { desc = "Split vertical" })
   vim.keymap.set("n", "<A-f>", "<C-w>_|<C-w>|", { desc = "Maximize window" })
+
+  local function is_last_window()
+    return #vim.api.nvim_tabpage_list_wins(0) <= 1
+  end
+
   vim.keymap.set("n", "<A-q>", function()
-    if #vim.api.nvim_tabpage_list_wins(0) > 1 then
-      vim.cmd("close")
+    if is_last_window() then
+      vim.notify("Cannot close the last window", vim.log.levels.INFO)
+      return
     end
+
+    vim.cmd("close")
   end, { desc = "Close window" })
 
   vim.keymap.set("n", "<A-S-q>", function()
     Snacks.bufdelete()
-    vim.cmd("close")
-  end, { desc = "Delete buffer and close window" })
+  end, { desc = "Delete buffer" })
 
-  -- Window sizing
   vim.keymap.set("n", "<C-+>", "<C-w>+", { desc = "Increase height" })
   vim.keymap.set("n", "<C-->", "<C-w>-", { desc = "Decrease height" })
   vim.keymap.set("n", "<A-=>", "<C-w>>", { desc = "Increase width" })
